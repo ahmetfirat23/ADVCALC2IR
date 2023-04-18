@@ -51,7 +51,7 @@ char *VAR_KEYS[128];
 long long VARS[128];
 int VAR_IDX = 0;
 int REG_IDX = 1;
-int LINE_IDX = 0;
+int LINE_IDX = 1;
 FILE *op;
 
 /*
@@ -461,7 +461,7 @@ int reformat_token_list(struct token **head) {
                     char reg_name[256];
                     sprintf(reg_name, "%%reg%d",REG_IDX);
                     strcpy(iter->register_name, reg_name);
-                    fprintf(op,"%s = load i32, i32* %%%s\n", reg_name, VAR_KEYS[i]);
+                    fprintf(op,"\t%s = load i32, i32* %%%s\n", reg_name, VAR_KEYS[i]);
                     REG_IDX++;
                     break;
                 }
@@ -504,52 +504,52 @@ void calculate_opr(struct token *opr, token_type type) {
     switch (type) {
         case MULTI:
             opr_result = left_value * right_value;
-            fprintf(op,"%s = mul i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"\t%s = mul i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case DIV:
             opr_result = left_value / right_value;
-            fprintf(op,"%s = sdiv i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"\t%s = sdiv i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case MOD:
             opr_result = left_value % right_value;
-            fprintf(op,"%s = srem i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"\t%s = srem i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case SUM:
             opr_result = left_value + right_value;
-            fprintf(op,"%s = add i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"\t%s = add i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case MINUS:
             opr_result = left_value - right_value;
-            fprintf(op,"%s = sub i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"\t%s = sub i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_AND:
             opr_result = left_value & right_value;
-            fprintf(op,"%s = and i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"\t%s = and i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_OR:
             opr_result = left_value | right_value;
-            fprintf(op, "%s = or i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op, "\t%s = or i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_XOR:
             opr_result = left_value ^ right_value;
-            fprintf(op, "%s = xor i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op, "\t%s = xor i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LS:
             opr_result = left_value << right_value;
-            fprintf(op, "%s = lshl i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op, "\t%s = lshl i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case RS:
             opr_result = left_value >> right_value;
-            fprintf(op,"%s = lshr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"\t%s = lshr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LR:
@@ -696,7 +696,7 @@ long long calculate(struct token *head) {
 void print_debug(struct token *head) {
     struct token *iter = head;
     while (iter->token_type != EOL) {
-        fprintf(op,"%s ", iter->token_val);
+        fprintf(op,"\t%s ", iter->token_val);
         iter = iter->next;
     }
 }
@@ -721,6 +721,11 @@ int main() {
     FILE *fp;
     fp = fopen("file.adv","r");
     op = fopen("file.ll","w");
+    fprintf(op,"; ModuleID = 'advcalc2ir'\n");
+    fprintf(op,"declare i32 @printf(i8*, ...)\n");
+    fprintf(op,"@print.str = constant [4 x i8] c\"%%d\\0A\\00\"\n\n");
+    fprintf(op,"define i32 @main() {\n");
+
     //setbuf(stdout, NULL);
     int error_code = 0;
     int exit_code = 0;
@@ -781,19 +786,22 @@ int main() {
                     } else {
                         long long res = calculate(head);
                         char *result = (strstr(head->register_name, "%reg"))? head->register_name: head->token_val;
-                        fprintf(op,"call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @print.str, i32 0, i32 0), i32 %s)\n", result); //TODO REMOVAL
+                        fprintf(op,"\tcall i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @print.str, i32 0, i32 0), i32 %s)\n", result); //TODO REMOVAL
                     }
                 }
             } else {
-                fprintf(op,"Error on line %d!\n", LINE_IDX);
+                printf("Error on line %d!\n", LINE_IDX);
+                break;
             }
             free_ll(head);
         } else {
-            fprintf(op,"Error on line %d!\n", LINE_IDX);
+            printf("Error on line %d!\n", LINE_IDX);
+            break;
         }
         if(exit_code==0){ //TODO REMOVAL
             //fprintf(op,"%s ", ">");
         }
         LINE_IDX++;
     }
+    fprintf(op, "\n\tret i32 0\n}");
 }
