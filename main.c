@@ -51,7 +51,7 @@ char *VAR_KEYS[128];
 long long VARS[128];
 int VAR_IDX = 0;
 int REG_IDX = 1;
-int LINE_IDX = 0;
+int LINE_IDX = 1;
 FILE *op;
 
 /*
