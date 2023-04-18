@@ -339,7 +339,7 @@ int exp_syntax_checker(struct token *head) {
         } else {
             if (type == VAR || type == INT) {
                 if (next_type == CLOSE_P || next_type == SUM || next_type == MULTI || next_type == DIV
-                    || next_type == MOD|| next_type == MINUS || next_type == B_AND || next_type == B_OR
+                    || next_type == MOD || next_type == MINUS || next_type == B_AND || next_type == B_OR
                     || next_type == COMMA || next_type == EOL) {
                     iter = iter->next;
                     continue;
@@ -358,16 +358,16 @@ int exp_syntax_checker(struct token *head) {
                 }
             } else if (type == CLOSE_P) {
                 p_count--;
-                if (next_type == CLOSE_P || next_type == SUM || next_type == MULTI ||next_type == DIV ||next_type == MOD
-                    || next_type == MINUS || next_type == B_AND || next_type == B_OR || next_type == COMMA
-                    || next_type == EOL) {
+                if (next_type == CLOSE_P || next_type == SUM || next_type == MULTI ||next_type == DIV
+                    || next_type == MOD || next_type == MINUS || next_type == B_AND || next_type == B_OR
+                    || next_type == COMMA || next_type == EOL) {
                     iter = iter->next;
                     continue;
                 } else {
                     return -1;
                 }
-            } else if (type == SUM || type == MULTI ||next_type == DIV ||next_type == MOD || type == MINUS
-                || type == B_AND || type == B_OR || type == COMMA) {
+            } else if (type == SUM || type == MULTI || type == DIV || type == MOD
+                    || type == MINUS || type == B_AND || type == B_OR || type == COMMA) {
                 if (type == COMMA) {
                     func_count--;
                     if(limiting_p_count + 1 != p_count){ //Seen different place than function scope
