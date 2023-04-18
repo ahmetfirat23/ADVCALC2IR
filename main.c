@@ -31,7 +31,7 @@ typedef enum {
 struct token {
     token_type token_type;
     char token_val[256];
-    char register_name[256];
+    char register_name[32];
     struct token *next;
     struct token *prev;
 };
