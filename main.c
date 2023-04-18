@@ -494,8 +494,8 @@ void calculate_opr(struct token *opr, token_type type) {
     long long right_value;
     sscanf(right_side->token_val, "%lld", &right_value);
 
-    char *left_register_name = (strlen(left_side->register_name) > 0)? left_side->register_name: left_side->token_val;
-    char *right_register_name = (strlen(right_side->register_name) > 0)? right_side->register_name: right_side->token_val;
+    char *left_register_name = (strstr(left_side->register_name, "%reg"))? left_side->register_name : left_side->token_val;
+    char *right_register_name = (strstr(right_side->register_name, "%reg"))? right_side->register_name : right_side->token_val;
     char new_register_name[16];
     sprintf(new_register_name, "%%reg%d", REG_IDX);
     REG_IDX++;
