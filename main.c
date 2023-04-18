@@ -739,9 +739,13 @@ int main() {
             if (error_code == 0) {
                 if (head->token_type != EOL) {
                     if (p_equal != NULL) {
+
                         long long res = calculate(p_equal->next);
                         char *var_name = calloc(256, sizeof(char));
                         strcpy(var_name, p_equal->prev->token_val);
+
+                        printf("%%%s = alloca i32\n", var_name);
+                        printf("store i32 %lld, i32* %%%s\n", res, var_name);
 
                         int declared = 0;
                         for (int i = 0; i < VAR_IDX; i++) {
