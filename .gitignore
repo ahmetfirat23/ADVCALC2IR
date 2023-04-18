@@ -1,0 +1,7 @@
+*.exe
+/cmake-build-debug/
+/cmake-build-debug-wsl/
+/main.o
+.idea
+CMakeLists.txt
+Documentation.docx
