@@ -760,8 +760,8 @@ int main() {
                         char *var_name = calloc(256, sizeof(char));
                         strcpy(var_name, p_equal->prev->token_val);
 
-                        fprintf(op,"%%%s = alloca i32\n", var_name);
-                        fprintf(op,"store i32 %lld, i32* %%%s\n", res, var_name);
+
+
 
                         int declared = 0;
                         for (int i = 0; i < VAR_IDX; i++) {
@@ -772,10 +772,12 @@ int main() {
                             }
                         }
                         if (declared == 0) {
+                            fprintf(op,"%%%s = alloca i32\n", var_name);
                             VARS[VAR_IDX] = res;
                             VAR_KEYS[VAR_IDX] = var_name;
                             VAR_IDX++;
                         }
+                        fprintf(op,"store i32 %lld, i32* %%%s\n", res, var_name);
                     } else {
                         long long res = calculate(head);
                         char *result = (strstr(head->register_name, "%reg"))? head->register_name: head->token_val;
