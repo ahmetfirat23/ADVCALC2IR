@@ -11,6 +11,8 @@ typedef enum {
     CLOSE_P,
     SUM,
     MULTI,
+    DIV,
+    MOD,
     MINUS,
     EQUAL,
     B_AND,
@@ -29,9 +31,11 @@ typedef enum {
 struct token {
     token_type token_type;
     char token_val[256];
+    char register_name[16];
     struct token *next;
     struct token *prev;
 };
+int count = 1;
 
 //Reserved keywords and signs
 char *KEYWORDS[] = {"xor", "ls", "rs", "lr", "rr", "not"};
@@ -467,6 +471,8 @@ int reformat_token_list(struct token **head) {
  * check for operation type and apply a proper process,
  * assign the result to a token and gets rid of operation. e.g. (5 + 2 * 3) => (5 + 6) => (11)
  * */
+
+
 void calculate_opr(struct token *opr, token_type type) {
     struct token *left_side = opr->prev;
     struct token *right_side = opr->next;
@@ -475,38 +481,62 @@ void calculate_opr(struct token *opr, token_type type) {
     long long right_value;
     sscanf(right_side->token_val, "%lld", &right_value);
 
+    char *left_register_name = (strlen(left_side->register_name) > 0)? left_side->register_name: left_side->token_val;
+    char *right_register_name = (strlen(right_side->register_name) > 0)? right_side->register_name: right_side->token_val;
+    char new_register_name[16];
+    sprintf(new_register_name, "%%ali%d", count);
+    count++;
+
     long long opr_result = 0;
     switch (type) {
         case MULTI:
             opr_result = left_value * right_value;
+            printf("%s = mul i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            break;
+
+        case DIV:
+            opr_result = left_value / right_value;
+            printf("%s = sdiv i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            break;
+
+        case MOD:
+            opr_result = left_value % right_value;
+            printf("%s = srem i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case SUM:
             opr_result = left_value + right_value;
+            printf("%s = add i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case MINUS:
             opr_result = left_value - right_value;
+            printf("%s = sub i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_AND:
             opr_result = left_value & right_value;
+            printf("%s = and i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_OR:
             opr_result = left_value | right_value;
+            printf("%s = or i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_XOR:
             opr_result = left_value ^ right_value;
+            printf("%s = xor i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LS:
             opr_result = left_value << right_value;
+            printf("%s = lshl i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case RS:
             opr_result = left_value >> right_value;
+            printf("%s = lshr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LR:
@@ -528,6 +558,7 @@ void calculate_opr(struct token *opr, token_type type) {
 
     left_side->next = right_side->next;
     right_side->next->prev = left_side;
+    strcpy(left_side->register_name, new_register_name);
 }
 
 /*
@@ -555,11 +586,17 @@ long long calculate(struct token *head) {
         temp_head = temp_head->next;
     }
 
-    //Loop for multiplication
+    //Loop for multiplication, division, modulus
     temp_head = head;
     while (temp_head->token_type != CLOSE_P && temp_head->token_type != EOL) {
         if (temp_head->token_type == MULTI) {
             calculate_opr(temp_head, MULTI);
+        }
+        if (temp_head->token_type == DIV) {
+            calculate_opr(temp_head, DIV);
+        }
+        if (temp_head->token_type == MOD) {
+            calculate_opr(temp_head, MOD);
         }
         temp_head = temp_head->next;
     }
