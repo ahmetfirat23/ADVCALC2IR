@@ -31,15 +31,15 @@ typedef enum {
 struct token {
     token_type token_type;
     char token_val[256];
-    char register_name[16];
+    char register_name[256];
     struct token *next;
     struct token *prev;
 };
-int count = 1;
+
 
 //Reserved keywords and signs
 char *KEYWORDS[] = {"xor", "ls", "rs", "lr", "rr", "not"};
-char SIGNS[] = {'=', '+', '-', '*', '&', '|', '(', ')', ',', '%'};
+char SIGNS[] = {'=', '+', '-', '*', '/', '%', '&', '|', '(', ')', ',', '#'}; //TODO # FOR COMMENT ARBITRARY
 
 /*
  * LOOKUP TABLE
@@ -50,13 +50,14 @@ char SIGNS[] = {'=', '+', '-', '*', '&', '|', '(', ')', ',', '%'};
 char *VAR_KEYS[128];
 long long VARS[128];
 int VAR_IDX = 0;
-
+int REG_IDX = 1;
+int LINE_IDX = 0;
 /*
  * Check whether given char is a valid sign
  * Return 1 on sign, else 0
 */
 int is_sign(char chr) {
-    for (int i = 0; i < 10; i++) { //There are 10 signs
+    for (int i = 0; i < 12; i++) { //There are 12 signs
         if (chr == SIGNS[i]) {
             return 1;
         }
@@ -150,6 +151,10 @@ struct token sign_parser(char **exp) {
         token.token_type = MINUS;
     } else if (**exp == '*') {
         token.token_type = MULTI;
+    } else if (**exp == '/') {
+        token.token_type = DIV;
+    } else if (**exp == '%') {
+        token.token_type = MOD;
     } else if (**exp == '&') {
         token.token_type = B_AND;
     } else if (**exp == '|') {
@@ -296,8 +301,8 @@ int exp_syntax_checker(struct token *head) {
         token_type next_type = iter->next->token_type;
         if (iter->prev == NULL || iter->prev->token_type == EQUAL) {
             if (type == VAR || type == INT) {
-                if (next_type == SUM || next_type == MULTI || next_type == MINUS || next_type == B_AND
-                    || next_type == B_OR || next_type == EOL) {
+                if (next_type == SUM || next_type == MULTI ||next_type == DIV ||next_type == MOD
+                    || next_type == MINUS || next_type == B_AND || next_type == B_OR || next_type == EOL) {
                     iter = iter->next;
                     continue;
                 } else {
@@ -331,8 +336,9 @@ int exp_syntax_checker(struct token *head) {
             }
         } else {
             if (type == VAR || type == INT) {
-                if (next_type == CLOSE_P || next_type == SUM || next_type == MULTI || next_type == MINUS
-                    || next_type == B_AND || next_type == B_OR || next_type == COMMA || next_type == EOL) {
+                if (next_type == CLOSE_P || next_type == SUM || next_type == MULTI || next_type == DIV
+                    || next_type == MOD|| next_type == MINUS || next_type == B_AND || next_type == B_OR
+                    || next_type == COMMA || next_type == EOL) {
                     iter = iter->next;
                     continue;
                 } else {
@@ -350,15 +356,16 @@ int exp_syntax_checker(struct token *head) {
                 }
             } else if (type == CLOSE_P) {
                 p_count--;
-                if (next_type == CLOSE_P || next_type == SUM || next_type == MULTI || next_type == MINUS
-                    || next_type == B_AND || next_type == B_OR || next_type == COMMA || next_type == EOL) {
+                if (next_type == CLOSE_P || next_type == SUM || next_type == MULTI ||next_type == DIV ||next_type == MOD
+                    || next_type == MINUS || next_type == B_AND || next_type == B_OR || next_type == COMMA
+                    || next_type == EOL) {
                     iter = iter->next;
                     continue;
                 } else {
                     return -1;
                 }
-            } else if (type == SUM || type == MULTI || type == MINUS || type == B_AND || type == B_OR
-                       || type == COMMA) {
+            } else if (type == SUM || type == MULTI ||next_type == DIV ||next_type == MOD || type == MINUS
+                || type == B_AND || type == B_OR || type == COMMA) {
                 if (type == COMMA) {
                     func_count--;
                     if(limiting_p_count + 1 != p_count){ //Seen different place than function scope
@@ -449,13 +456,17 @@ int reformat_token_list(struct token **head) {
             while (i < VAR_IDX) {
                 if (strcmp(iter->token_val, VAR_KEYS[i]) == 0) {
                     sprintf(iter->token_val, "%lld", VARS[i]);
+                    char reg_name[256];
+                    sprintf(reg_name, "%%%d",REG_IDX);
+                    strcpy(iter->register_name, reg_name);
+                    printf("%s load i32, i32* %%%s\n", reg_name, VAR_KEYS[i]);
+                    REG_IDX++;
                     break;
                 }
                 i++;
             }
             if (i == VAR_IDX) {
-                long long val = 0;
-                sprintf(iter->token_val, "%lld", val);
+                return -1;
             }
         }
         iter = iter->next;
@@ -484,8 +495,8 @@ void calculate_opr(struct token *opr, token_type type) {
     char *left_register_name = (strlen(left_side->register_name) > 0)? left_side->register_name: left_side->token_val;
     char *right_register_name = (strlen(right_side->register_name) > 0)? right_side->register_name: right_side->token_val;
     char new_register_name[16];
-    sprintf(new_register_name, "%%ali%d", count);
-    count++;
+    sprintf(new_register_name, "%%ali%d", REG_IDX);
+    REG_IDX++;
 
     long long opr_result = 0;
     switch (type) {
