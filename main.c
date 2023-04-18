@@ -780,13 +780,13 @@ int main() {
                             }
                         }
                         if (declared == 0) {
-                            fprintf(op,"%%%s = alloca i32\n", var_name);
+                            fprintf(op,"\t%%%s = alloca i32\n", var_name);
                             VARS[VAR_IDX] = 1;
                             VAR_KEYS[VAR_IDX] = var_name;
                             VAR_IDX++;
                         }
                         char *result = (strstr(p_equal->next->register_name, "%reg"))? p_equal->next->register_name: p_equal->next->token_val;
-                        fprintf(op,"store i32 %s, i32* %%%s\n", result, var_name);
+                        fprintf(op,"\tstore i32 %s, i32* %%%s\n", result, var_name);
                     } else {
                         calculate(head);
                         char *result = (strstr(head->register_name, "%reg"))? head->register_name: head->token_val;
