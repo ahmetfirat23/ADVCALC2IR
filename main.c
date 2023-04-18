@@ -31,7 +31,7 @@ typedef enum {
 struct token {
     token_type token_type;
     char token_val[256];
-    char register_name[256];
+    char register_name[16];
     struct token *next;
     struct token *prev;
 };
@@ -778,7 +778,8 @@ int main() {
                         }
                     } else {
                         long long res = calculate(head);
-                        fprintf(op,"%lld\n", res); //TODO REMOVAL
+                        char *result = (strstr(head->register_name, "%reg"))? head->register_name: head->token_val;
+                        fprintf(op,"call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @print.str, i32 0, i32 0), i32 %s)\n", result); //TODO REMOVAL
                     }
                 }
             } else {
