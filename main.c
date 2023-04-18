@@ -457,9 +457,9 @@ int reformat_token_list(struct token **head) {
                 if (strcmp(iter->token_val, VAR_KEYS[i]) == 0) {
                     sprintf(iter->token_val, "%lld", VARS[i]);
                     char reg_name[256];
-                    sprintf(reg_name, "%%%d",REG_IDX);
+                    sprintf(reg_name, "%%reg%d",REG_IDX);
                     strcpy(iter->register_name, reg_name);
-                    printf("%s load i32, i32* %%%s\n", reg_name, VAR_KEYS[i]);
+                    printf("%s = load i32, i32* %%%s\n", reg_name, VAR_KEYS[i]);
                     REG_IDX++;
                     break;
                 }
@@ -495,7 +495,7 @@ void calculate_opr(struct token *opr, token_type type) {
     char *left_register_name = (strlen(left_side->register_name) > 0)? left_side->register_name: left_side->token_val;
     char *right_register_name = (strlen(right_side->register_name) > 0)? right_side->register_name: right_side->token_val;
     char new_register_name[16];
-    sprintf(new_register_name, "%%ali%d", REG_IDX);
+    sprintf(new_register_name, "%%reg%d", REG_IDX);
     REG_IDX++;
 
     long long opr_result = 0;
