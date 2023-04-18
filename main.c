@@ -593,7 +593,8 @@ void calculate(struct token *head) {
             calculate(temp_head->next);
             //char string_result[24];
             //sprintf(string_result, "%lld", parenthesis_result); //TODO CHECK FOR 64 BIT INTEGER
-            temp_head->token_type = INT;
+            //temp_head->token_type = INT;
+
             //strcpy(temp_head->token_val, string_result);
         }
         temp_head = temp_head->next;
@@ -680,6 +681,11 @@ void calculate(struct token *head) {
                 head->prev->prev = head->prev->prev->prev;
             }
         }
+
+        strcpy(head->prev->register_name, head->register_name);
+        strcpy(head->prev->token_val, head->token_val);
+        head->prev->token_type = INT;
+
         head->prev->next = head->next->next;
         head->next->next->prev = head->prev;
     }
