@@ -52,6 +52,8 @@ long long VARS[128];
 int VAR_IDX = 0;
 int REG_IDX = 1;
 int LINE_IDX = 0;
+FILE *op;
+
 /*
  * Check whether given char is a valid sign
  * Return 1 on sign, else 0
@@ -459,7 +461,7 @@ int reformat_token_list(struct token **head) {
                     char reg_name[256];
                     sprintf(reg_name, "%%reg%d",REG_IDX);
                     strcpy(iter->register_name, reg_name);
-                    printf("%s = load i32, i32* %%%s\n", reg_name, VAR_KEYS[i]);
+                    fprintf(op,"%s = load i32, i32* %%%s\n", reg_name, VAR_KEYS[i]);
                     REG_IDX++;
                     break;
                 }
@@ -502,52 +504,52 @@ void calculate_opr(struct token *opr, token_type type) {
     switch (type) {
         case MULTI:
             opr_result = left_value * right_value;
-            printf("%s = mul i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"%s = mul i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case DIV:
             opr_result = left_value / right_value;
-            printf("%s = sdiv i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"%s = sdiv i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case MOD:
             opr_result = left_value % right_value;
-            printf("%s = srem i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"%s = srem i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case SUM:
             opr_result = left_value + right_value;
-            printf("%s = add i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"%s = add i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case MINUS:
             opr_result = left_value - right_value;
-            printf("%s = sub i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"%s = sub i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_AND:
             opr_result = left_value & right_value;
-            printf("%s = and i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"%s = and i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_OR:
             opr_result = left_value | right_value;
-            printf("%s = or i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op, "%s = or i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_XOR:
             opr_result = left_value ^ right_value;
-            printf("%s = xor i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op, "%s = xor i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LS:
             opr_result = left_value << right_value;
-            printf("%s = lshl i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op, "%s = lshl i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case RS:
             opr_result = left_value >> right_value;
-            printf("%s = lshr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"%s = lshr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LR:
@@ -694,7 +696,7 @@ long long calculate(struct token *head) {
 void print_debug(struct token *head) {
     struct token *iter = head;
     while (iter->token_type != EOL) {
-        printf("%s ", iter->token_val);
+        fprintf(op,"%s ", iter->token_val);
         iter = iter->next;
     }
 }
@@ -716,17 +718,20 @@ void free_ll(struct token *head) {
 }
 
 int main() {
-    setbuf(stdout, NULL);
+    FILE *fp;
+    fp = fopen("file.adv","r");
+    op = fopen("file.ll","w");
+    //setbuf(stdout, NULL);
     int error_code = 0;
     int exit_code = 0;
     char line[256 + 1] = "";
-    printf("%s ", ">");
+    //printf("%s ", ">");
 
-    while (fgets(line, sizeof(line), stdin)) {
+    while (fgets(line, sizeof(line), fp)) {
         error_code = 0;
         if (line[strlen(line)-1]!='\n') { // Stop when CTRL+D
             strcat(line,"\n");
-            printf("\n");
+            //printf("\n");
             exit_code = 1;
         }
 
@@ -755,8 +760,8 @@ int main() {
                         char *var_name = calloc(256, sizeof(char));
                         strcpy(var_name, p_equal->prev->token_val);
 
-                        printf("%%%s = alloca i32\n", var_name);
-                        printf("store i32 %lld, i32* %%%s\n", res, var_name);
+                        fprintf(op,"%%%s = alloca i32\n", var_name);
+                        fprintf(op,"store i32 %lld, i32* %%%s\n", res, var_name);
 
                         int declared = 0;
                         for (int i = 0; i < VAR_IDX; i++) {
@@ -773,18 +778,19 @@ int main() {
                         }
                     } else {
                         long long res = calculate(head);
-                        printf("%lld\n", res);
+                        fprintf(op,"%lld\n", res); //TODO REMOVAL
                     }
                 }
             } else {
-                printf("Error!\n");
+                fprintf(op,"Error on line %d!\n", LINE_IDX);
             }
             free_ll(head);
         } else {
-            printf("Error!\n");
+            fprintf(op,"Error on line %d!\n", LINE_IDX);
         }
-        if(exit_code==0){
-            printf("%s ", ">");
+        if(exit_code==0){ //TODO REMOVAL
+            //fprintf(op,"%s ", ">");
         }
+        LINE_IDX++;
     }
 }
