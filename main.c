@@ -794,8 +794,8 @@ int main() {
                     }
                 }
             } else {
-                printf("Error on line %d!\n", LINE_IDX);
-                break;
+                printf("Error on line %d!\n", LINE_IDX);//TODO DELETE THE OUTPUT FILE
+                break; //TODO LET THE PROGRAM CONTINUE ON ERROR, FILE IS DELETED TURN OFF WRITING OR DELETE AT THE END?
             }
             free_ll(head);
         } else {
