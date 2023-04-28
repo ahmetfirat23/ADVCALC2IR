@@ -480,93 +480,116 @@ void calculate_opr(struct token *opr, token_type type) {
     char *left_register_name = (strstr(left_side->register_name, "%reg"))? left_side->register_name : left_side->token_val;
     char *right_register_name = (strstr(right_side->register_name, "%reg"))? right_side->register_name : right_side->token_val;
     char new_register_name[16];
-    sprintf(new_register_name, "%%reg%d", REG_IDX);
-    REG_IDX++;
+    char new_register_nameR[16];
 
     //long long opr_result = 0;
     switch (type) {
         case MULTI:
             //opr_result = left_value * right_value;
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
             fprintf(op,"\t%s = mul i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case DIV:
             //opr_result = left_value / right_value;
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
             fprintf(op,"\t%s = sdiv i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case MOD:
             //opr_result = left_value % right_value;
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
             fprintf(op,"\t%s = srem i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case SUM:
             //opr_result = left_value + right_value;
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
             fprintf(op,"\t%s = add i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case MINUS:
             //opr_result = left_value - right_value;
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
             fprintf(op,"\t%s = sub i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_AND:
             //opr_result = left_value & right_value;
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
             fprintf(op,"\t%s = and i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_OR:
            //opr_result = left_value | right_value;
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
             fprintf(op, "\t%s = or i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_XOR:
             //opr_result = left_value ^ right_value;
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
             fprintf(op, "\t%s = xor i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LS:
             //opr_result = left_value << right_value;
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
             fprintf(op, "\t%s = shl i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case RS:
             //opr_result = left_value >> right_value;
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
             fprintf(op,"\t%s = ashr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LR:
             //opr_result = (long long)((((unsigned long long)left_value) << right_value) | (((unsigned long long)left_value) >> (64 - right_value)));
-            fprintf(op, "\t%s = shl i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
-            char new_register_name1[16];
-            sprintf(new_register_name1, "%%reg%d", REG_IDX);
+
+            sprintf(new_register_nameR, "%%reg%d", REG_IDX);
             REG_IDX++;
-            fprintf(op,"\t%s = sub i32 32, %s\n", new_register_name1, right_register_name);
+            fprintf(op, "\t%s = shl i32 %s, %s\n", new_register_nameR, left_register_name, right_register_name);
             char new_register_name2[16];
             sprintf(new_register_name2, "%%reg%d", REG_IDX);
             REG_IDX++;
-            fprintf(op,"\t%s = lshr i32 %s, %s\n", new_register_name2, left_register_name, new_register_name1);
+            fprintf(op,"\t%s = sub i32 32, %s\n", new_register_name2, right_register_name);
             char new_register_name3[16];
             sprintf(new_register_name3, "%%reg%d", REG_IDX);
             REG_IDX++;
-            fprintf(op, "\t%s = or i32 %s, %s\n", new_register_name3, new_register_name, new_register_name2);
+            fprintf(op,"\t%s = lshr i32 %s, %s\n", new_register_name3, left_register_name, new_register_name2);
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
+            fprintf(op, "\t%s = or i32 %s, %s\n", new_register_name, new_register_nameR, new_register_name3);
             break;
 
         case RR:
             //opr_result = (long long)((((unsigned long long)left_value) >> right_value) | (((unsigned long long)left_value) << (64 - right_value)));
-            fprintf(op, "\t%s = lshr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
-            char new_register_name4[16];
-            sprintf(new_register_name4, "%%reg%d", REG_IDX);
+
+            sprintf(new_register_nameR, "%%reg%d", REG_IDX);
             REG_IDX++;
-            fprintf(op,"\t%s = sub i32 32, %s\n", new_register_name4, right_register_name);
+            fprintf(op, "\t%s = lshr i32 %s, %s\n", new_register_nameR, left_register_name, right_register_name);
             char new_register_name5[16];
             sprintf(new_register_name5, "%%reg%d", REG_IDX);
             REG_IDX++;
-            fprintf(op,"\t%s = shl i32 %s, %s\n", new_register_name5, left_register_name, new_register_name4);
+            fprintf(op,"\t%s = sub i32 32, %s\n", new_register_name5, right_register_name);
             char new_register_name6[16];
             sprintf(new_register_name6, "%%reg%d", REG_IDX);
             REG_IDX++;
-            fprintf(op, "\t%s = or i32 %s, %s\n", new_register_name6, new_register_name, new_register_name5);
+            fprintf(op,"\t%s = shl i32 %s, %s\n", new_register_name6, left_register_name, new_register_name5);
+            sprintf(new_register_name, "%%reg%d", REG_IDX);
+            REG_IDX++;
+            fprintf(op, "\t%s = or i32 %s, %s\n", new_register_name, new_register_nameR, new_register_name6);
             break;
 
         default:
