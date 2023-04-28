@@ -688,6 +688,7 @@ void calculate(struct token *head) {
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op,"\t%s = xor i32 -1, %s\n", new_register_name, register_name);
+            strcpy(head->register_name, new_register_name);
             if (head->prev->prev->prev == NULL) {
                 head->prev->prev = NULL;
             } else {
@@ -799,11 +800,13 @@ int main() {
                             VAR_KEYS[VAR_IDX] = var_name;
                             VAR_IDX++;
                         }
-                        char *result = (strstr(p_equal->next->register_name, "%reg"))? p_equal->next->register_name: p_equal->next->token_val;
+                        struct token *ptr = (p_equal->next->token_type == NOT)? p_equal->next->next: p_equal->next;
+                        char *result = (strstr(ptr->register_name, "%reg"))? ptr->register_name: ptr->token_val;
                         fprintf(op,"\tstore i32 %s, i32* %%%s\n", result, var_name);
                     } else {
                         calculate(head);
-                        char *result = (strstr(head->register_name, "%reg"))? head->register_name: head->token_val;
+                        struct token *ptr = (head->token_type == NOT)? head->next: head;
+                        char *result = (strstr(ptr->register_name, "%reg"))? ptr->register_name: ptr->token_val;
                         fprintf(op,"\tcall i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @print.str, i32 0, i32 0), i32 %s)\n", result); //TODO REMOVAL
                     }
                 }
