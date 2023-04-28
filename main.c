@@ -24,7 +24,6 @@ typedef enum {
     RR,
     NOT,
     COMMA,
-    COMMENT,
     EOL,
 } token_type;
 
@@ -39,7 +38,7 @@ struct token {
 
 //Reserved keywords and signs
 char *KEYWORDS[] = {"xor", "ls", "rs", "lr", "rr", "not"};
-char SIGNS[] = {'=', '+', '-', '*', '/', '%', '&', '|', '(', ')', ',', '#'}; //TODO # FOR COMMENT ARBITRARY
+char SIGNS[] = {'=', '+', '-', '*', '/', '%', '&', '|', '(', ')', ','};
 
 /*
  * LOOKUP TABLE
@@ -59,7 +58,7 @@ FILE *op;
  * Return 1 on sign, else 0
 */
 int is_sign(char chr) {
-    for (int i = 0; i < 12; i++) { //There are 12 signs
+    for (int i = 0; i < 11; i++) { //There are 11 signs
         if (chr == SIGNS[i]) {
             return 1;
         }
@@ -167,8 +166,6 @@ struct token sign_parser(char **exp) {
         token.token_type = CLOSE_P;
     } else if (**exp == ',') {
         token.token_type = COMMA;
-    } else if (**exp == '%') {
-        token.token_type = COMMENT;
     }
     strcpy(token.token_val, (char[2]) {**exp, '\0'});
     (*exp)++;
