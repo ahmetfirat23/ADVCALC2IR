@@ -527,12 +527,12 @@ void calculate_opr(struct token *opr, token_type type) {
 
         case LS:
             //opr_result = left_value << right_value;
-            fprintf(op, "\t%s = lshl i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op, "\t%s = shl i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case RS:
             //opr_result = left_value >> right_value;
-            fprintf(op,"\t%s = lshr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op,"\t%s = ashr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LR:
