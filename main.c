@@ -545,7 +545,7 @@ void calculate_opr(struct token *opr, token_type type) {
             char new_register_name2[16];
             sprintf(new_register_name2, "%%reg%d", REG_IDX);
             REG_IDX++;
-            fprintf(op,"\t%s = ashr i32 %s, %s\n", new_register_name2, left_register_name, new_register_name1);
+            fprintf(op,"\t%s = lshr i32 %s, %s\n", new_register_name2, left_register_name, new_register_name1);
             char new_register_name3[16];
             sprintf(new_register_name3, "%%reg%d", REG_IDX);
             REG_IDX++;
@@ -554,7 +554,7 @@ void calculate_opr(struct token *opr, token_type type) {
 
         case RR:
             //opr_result = (long long)((((unsigned long long)left_value) >> right_value) | (((unsigned long long)left_value) << (64 - right_value)));
-            fprintf(op, "\t%s = ashr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
+            fprintf(op, "\t%s = lshr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             char new_register_name4[16];
             sprintf(new_register_name4, "%%reg%d", REG_IDX);
             REG_IDX++;
