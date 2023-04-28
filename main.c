@@ -224,20 +224,6 @@ int lexer(char *p, int length, struct token **head, struct token **tail, struct 
                     return -1;
                 }
             }
-
-            if ((*token).token_type == COMMENT) {
-                (*token) = eol_parser();
-                (*tail) = token;
-                if ((*head) == NULL) {
-                    (*head) = token;
-                    (*head)->next = NULL;
-                    (*tail)->prev = NULL;
-                } else {
-                    prev_token->next = (*tail);
-                    (*tail)->prev = prev_token;
-                }
-                break;
-            }
         } else {
             return -1;
         }
@@ -770,8 +756,8 @@ int main() {
         error_code = 0;
         if (line[strlen(line)-1]!='\n') { // Stop when CTRL+D
             strcat(line,"\n");
-            //printf("\n");
-            exit_code = 1;
+//            //printf("\n");
+//            exit_code = 1;
         }
 
         char *p = line;
@@ -823,17 +809,24 @@ int main() {
                 }
             } else {
                 printf("Error on line %d!\n", LINE_IDX);//TODO DELETE THE OUTPUT FILE
-                break; //TODO LET THE PROGRAM CONTINUE ON ERROR, FILE IS DELETED TURN OFF WRITING OR DELETE AT THE END?
+                exit_code = 1;
+                 //TODO LET THE PROGRAM CONTINUE ON ERROR, FILE IS DELETED TURN OFF WRITING OR DELETE AT THE END?
             }
             free_ll(head);
         } else {
             printf("Error on line %d!\n", LINE_IDX);
-            break;
+            exit_code = 1;
+            //TODO LET THE PROGRAM CONTINUE ON ERROR, FILE IS DELETED TURN OFF WRITING OR DELETE AT THE END?
         }
-        if(exit_code==0){ //TODO REMOVAL
-            //fprintf(op,"%s ", ">");
-        }
+//        if(exit_code==0){ //TODO REMOVAL
+//            //fprintf(op,"%s ", ">");
+//        }
         LINE_IDX++;
     }
-    fprintf(op, "\n\tret i32 0\n}");
+    if(exit_code==0) {
+        fprintf(op, "\n\tret i32 0\n}");
+    }
+    else{
+        remove("file.ll");
+    }
 }
