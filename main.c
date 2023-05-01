@@ -472,90 +472,74 @@ int reformat_token_list(struct token **head) {
 void calculate_opr(struct token *opr, token_type type) {
     struct token *left_side = opr->prev;
     struct token *right_side = opr->next;
-//    long long left_value;
-//    sscanf(left_side->token_val, "%lld", &left_value);
-//    long long right_value;
-//    sscanf(right_side->token_val, "%lld", &right_value);
 
     char *left_register_name = (strstr(left_side->register_name, "%reg"))? left_side->register_name : left_side->token_val;
     char *right_register_name = (strstr(right_side->register_name, "%reg"))? right_side->register_name : right_side->token_val;
     char new_register_name[16];
     char new_register_nameR[16];
 
-    //long long opr_result = 0;
     switch (type) {
         case MULTI:
-            //opr_result = left_value * right_value;
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op,"\t%s = mul i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case DIV:
-            //opr_result = left_value / right_value;
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op,"\t%s = sdiv i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case MOD:
-            //opr_result = left_value % right_value;
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op,"\t%s = srem i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case SUM:
-            //opr_result = left_value + right_value;
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op,"\t%s = add i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case MINUS:
-            //opr_result = left_value - right_value;
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op,"\t%s = sub i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_AND:
-            //opr_result = left_value & right_value;
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op,"\t%s = and i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_OR:
-           //opr_result = left_value | right_value;
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op, "\t%s = or i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case B_XOR:
-            //opr_result = left_value ^ right_value;
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op, "\t%s = xor i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LS:
-            //opr_result = left_value << right_value;
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op, "\t%s = shl i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case RS:
-            //opr_result = left_value >> right_value;
             sprintf(new_register_name, "%%reg%d", REG_IDX);
             REG_IDX++;
             fprintf(op,"\t%s = ashr i32 %s, %s\n", new_register_name, left_register_name, right_register_name);
             break;
 
         case LR:
-            //opr_result = (long long)((((unsigned long long)left_value) << right_value) | (((unsigned long long)left_value) >> (64 - right_value)));
 
             sprintf(new_register_nameR, "%%reg%d", REG_IDX);
             REG_IDX++;
@@ -574,7 +558,6 @@ void calculate_opr(struct token *opr, token_type type) {
             break;
 
         case RR:
-            //opr_result = (long long)((((unsigned long long)left_value) >> right_value) | (((unsigned long long)left_value) << (64 - right_value)));
 
             sprintf(new_register_nameR, "%%reg%d", REG_IDX);
             REG_IDX++;
@@ -595,11 +578,6 @@ void calculate_opr(struct token *opr, token_type type) {
         default:
             break;
     }
-
-    //char string_result[24];
-
-    //sprintf(string_result, "%lld", opr_result);
-    //strcpy(left_side->token_val, string_result);
 
     left_side->next = right_side->next;
     right_side->next->prev = left_side;
@@ -623,11 +601,6 @@ void calculate(struct token *head) {
     while (temp_head->token_type != CLOSE_P && temp_head->token_type != EOL) {
         if (temp_head->token_type == OPEN_P) {
             calculate(temp_head->next);
-            //char string_result[24];
-            //sprintf(string_result, "%lld", parenthesis_result); //TODO CHECK FOR 64 BIT INTEGER
-            //temp_head->token_type = INT;
-
-            //strcpy(temp_head->token_val, string_result);
         }
         temp_head = temp_head->next;
     }
@@ -701,11 +674,6 @@ void calculate(struct token *head) {
     //Detect close parenthesis and check for NOT function
     if (head->next->token_type == CLOSE_P) {
         if (head->prev->prev != NULL && head->prev->prev->token_type == NOT) {
-            //long long val;
-            //sscanf(head->token_val, "%lld", &val);
-            //char string_result[24];
-            //sprintf(string_result, "%lld", ~val);
-            //strcpy(head->token_val, string_result);
             char *register_name = (strstr(head->register_name, "%reg"))? head->register_name : head->token_val;
             char new_register_name[16];
             sprintf(new_register_name, "%%reg%d", REG_IDX);
@@ -728,10 +696,6 @@ void calculate(struct token *head) {
         head->next->next->prev = head->prev;
     }
 
-    //long long result;
-
-    //sscanf(head->token_val, "%lld", &result);
-    //return result;
 }
 
 /*
