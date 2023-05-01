@@ -45,6 +45,8 @@ char SIGNS[] = {'=', '+', '-', '*', '/', '%', '&', '|', '(', ')', ','};
  * VAR_KEYS holds variable names for the lookup table.
  * VARS holds variable values, and they share indices with VAR_KEYS
  * VAR_IDX holds next free index of the lookup table, must be updated when new var added
+ * REG_IDX holds next free index of the LLVM register
+ * LINE_IDX holds the current line index
  * */
 char *VAR_KEYS[128];
 long long VARS[128];
@@ -442,7 +444,7 @@ int reformat_token_list(struct token **head) {
                 if (strcmp(iter->token_val, VAR_KEYS[i]) == 0) {
                     sprintf(iter->token_val, "%lld", VARS[i]);
                     char reg_name[256];
-                    sprintf(reg_name, "%%reg%d",REG_IDX);
+                    sprintf(reg_name, "%%reg%d",REG_IDX); //Save register name for further operations
                     strcpy(iter->register_name, reg_name);
                     fprintf(op,"\t%s = load i32, i32* %%%s\n", reg_name, VAR_KEYS[i]);
                     REG_IDX++;
@@ -734,18 +736,14 @@ int main() {
     fprintf(op,"@print.str = constant [4 x i8] c\"%%d\\0A\\00\"\n\n");
     fprintf(op,"define i32 @main() {\n");
 
-    //setbuf(stdout, NULL);
     int error_code = 0;
     int exit_code = 0;
     char line[256 + 1] = "";
-    //printf("%s ", ">");
 
     while (fgets(line, sizeof(line), fp)) {
         error_code = 0;
-        if (line[strlen(line)-1]!='\n') { // Stop when CTRL+D
+        if (line[strlen(line)-1]!='\n') { //Safety check
             strcat(line,"\n");
-//            //printf("\n");
-//            exit_code = 1;
         }
 
         char *p = line;
@@ -794,23 +792,19 @@ int main() {
                         calculate(head);
                         struct token *ptr = (head->token_type == NOT)? head->next: head;
                         char *result = (strstr(ptr->register_name, "%reg"))? ptr->register_name: ptr->token_val;
-                        fprintf(op,"\tcall i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @print.str, i32 0, i32 0), i32 %s)\n", result); //TODO REMOVAL
+                        fprintf(op,"\tcall i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @print.str, i32 0, i32 0), i32 %s)\n", result);
                     }
                 }
             } else {
-                printf("Error on line %d!\n", LINE_IDX);//TODO DELETE THE OUTPUT FILE
+                printf("Error on line %d!\n", LINE_IDX);
                 exit_code = 1;
-                 //TODO LET THE PROGRAM CONTINUE ON ERROR, FILE IS DELETED TURN OFF WRITING OR DELETE AT THE END?
             }
             free_ll(head);
         } else {
             printf("Error on line %d!\n", LINE_IDX);
             exit_code = 1;
-            //TODO LET THE PROGRAM CONTINUE ON ERROR, FILE IS DELETED TURN OFF WRITING OR DELETE AT THE END?
         }
-//        if(exit_code==0){ //TODO REMOVAL
-//            //fprintf(op,"%s ", ">");
-//        }
+
         LINE_IDX++;
     }
     if(exit_code==0) {
