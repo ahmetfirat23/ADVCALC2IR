@@ -727,7 +727,17 @@ void free_ll(struct token *head) {
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    char in_name[64];
+    char out_name[64];
+    char* postfix;
+    //Extract file name
+    strcpy(in_name, argv[1]);
+    postfix = strrchr(in_name, '.');
+    strncpy(out_name, in_name, postfix - in_name);
+    strcat(out_name, ".ll");
+
     FILE *fp;
     fp = fopen("file.adv","r");
     op = fopen("file.ll","w");
@@ -811,6 +821,6 @@ int main() {
         fprintf(op, "\n\tret i32 0\n}");
     }
     else{
-        remove("file.ll");
+        remove(out_name);
     }
 }
